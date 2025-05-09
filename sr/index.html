@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>给最爱的你 - 生日纪念相册</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: #000;
+            color: #fff;
+            overflow-x: hidden;
+            touch-action: pan-y;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .container {
+            width: 100%;
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        /* 封面样式 */
+        .cover {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #ff758c, #ff7eb3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cover::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://img.freepik.com/free-vector/hand-painted-watercolor-pastel-sky-background_23-2148902771.jpg') center/cover;
+            opacity: 0.6;
+            z-index: 0;
+        }
+        
+        .cover-content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .title {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #fff;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            animation: fadeInDown 1s both;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            color: #fff;
+            text-shadow: 0 1px 5px rgba(0, 0, 0, 0.3);
+            animation: fadeInUp 1s 0.3s both;
+        }
+        
+        .enter-btn {
+            padding: 12px 30px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #ff758c;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+            animation: pulse 2s infinite 1s;
+        }
+        
+        .enter-btn:active {
+            transform: scale(0.95);
+        }
+        
+        /* 相册页面 */
+        .album {
+            display: none;
+            width: 100%;
+            min-height: 100vh;
+            padding: 20px 0;
+            background: #111;
+        }
+        
+        .page {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .page-title {
+            font-size: 1.8rem;
+            margin-bottom: 30px;
+            text-align: center;
+            color: #fff;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+        }
+        
+        .photo-container {
+            width: 90%;
+            max-width: 400px;
+            height: 300px;
+            position: relative;
+            perspective: 1000px;
+            margin-bottom: 30px;
+        }
+        
+        .photo {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            transform-style: preserve-3d;
+            transition: transform 1s;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        }
+        
+        .photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .photo-caption {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 10px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        
+        .nav-btns {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .nav-btn {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 50%;
+            color: #fff;
+            font-size: 1.2rem;
+            margin: 0 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .nav-btn:active {
+            background: rgba(255, 255, 255, 0.4);
+        }
+        
+        .heart {
+            position: absolute;
+            pointer-events: none;
+            animation: float 4s ease-in-out infinite;
+        }
+        
+        .music-control {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+        }
+        
+        .music-control i {
+            color: #fff;
+            font-size: 1.5rem;
+        }
+        
+        /* 动画效果 */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-20px) rotate(10deg);
+            }
+        }
+        
+        /* 页面切换动画 */
+        .page-enter {
+            animation: slideInRight 0.8s both;
+        }
+        
+        .page-exit {
+            animation: slideOutLeft 0.8s both;
+        }
+        
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideOutLeft {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .title {
+                font-size: 2rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+            
+            .page-title {
+                font-size: 1.5rem;
+            }
+            
+            .photo-container {
+                height: 250px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 封面 -->
+        <div class="cover" id="cover">
+            <div class="cover-content">
+                <h1 class="title">生日快乐</h1>
+                <p class="subtitle">给最爱的你 · 我们的时光相册</p>
+                <button class="enter-btn" id="enterBtn">点击开启</button>
+            </div>
+            
+            <!-- 漂浮的爱心 -->
+            <div class="heart" style="top: 20%; left: 10%; font-size: 24px; animation-delay: 0s;">❤️</div>
+            <div class="heart" style="top: 70%; left: 80%; font-size: 30px; animation-delay: 0.5s;">❤️</div>
+            <div class="heart" style="top: 40%; left: 60%; font-size: 20px; animation-delay: 1s;">❤️</div>
+            <div class="heart" style="top: 80%; left: 30%; font-size: 28px; animation-delay: 1.5s;">❤️</div>
+        </div>
+        
+        <!-- 相册内容 -->
+        <div class="album" id="album">
+            <!-- 页面1 -->
+            <div class="page active" id="page1">
+                <h2 class="page-title">遇见你的那一天</h2>
+                <div class="photo-container">
+                    <div class="photo">
+                        <img src="https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?ixlib=rb-1.2.1&auto=format&fit=crop&w=634&q=80" alt="我们的回忆">
+                        <div class="photo-caption">还记得我们第一次相遇的地方吗？</div>
+                    </div>
+                </div>
+                <p style="text-align: center; max-width: 80%; margin: 0 auto 30px;">生命中最美好的意外，就是遇见你</p>
+                <div class="nav-btns">
+                    <button class="nav-btn" onclick="prevPage()"><i class="fas fa-arrow-left"></i></button>
+                    <button class="nav-btn" onclick="nextPage()"><i class="fas fa-arrow-right"></i></button>
+                </div>
+            </div>
+            
+            <!-- 页面2 -->
+            <div class="page" id="page2">
+                <h2 class="page-title">一起走过的日子</h2>
+                <div class="photo-container">
+                    <div class="photo">
+                        <img src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" alt="我们的回忆">
+                        <div class="photo-caption">每一个有你的瞬间都值得珍藏</div>
+                    </div>
+                </div>
+                <p style="text-align: center; max-width: 80%; margin: 0 auto 30px;">和你在一起的每一天，都是我最珍贵的记忆</p>
+                <div class="nav-btns">
+                    <button class="nav-btn" onclick="prevPage()"><i class="fas fa-arrow-left"></i></button>
+                    <button class="nav-btn" onclick="nextPage()"><i class="fas fa-arrow-right"></i></button>
+                </div>
+            </div>
+            
+            <!-- 页面3 -->
+            <div class="page" id="page3">
+                <h2 class="page-title">你的笑容</h2>
+                <div class="photo-container">
+                    <div class="photo">
+                        <img src="https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?ixlib=rb-1.2.1&auto=format&fit=crop&w=634&q=80" alt="我们的回忆">
+                        <div class="photo-caption">你的笑容是我最大的幸福</div>
+                    </div>
+                </div>
+                <p style="text-align: center; max-width: 80%; margin: 0 auto 30px;">愿你的每一天都如今日般灿烂</p>
+                <div class="nav-btns">
+                    <button class="nav-btn" onclick="prevPage()"><i class="fas fa-arrow-left"></i></button>
+                    <button class="nav-btn" onclick="nextPage()"><i class="fas fa-arrow-right"></i></button>
+                </div>
+            </div>
+            
+            <!-- 页面4 -->
+            <div class="page" id="page4">
+                <h2 class="page-title">生日快乐</h2>
+                <div class="photo-container">
+                    <div class="photo">
+                        <img src="https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?ixlib=rb-1.2.1&auto=format&fit=crop&w=1056&q=80" alt="我们的回忆">
+                        <div class="photo-caption">愿你的生日如你一般美好</div>
+                    </div>
+                </div>
+                <p style="text-align: center; max-width: 80%; margin: 0 auto 30px;">感谢你出现在我的生命里，生日快乐！</p>
+                <div class="nav-btns">
+                    <button class="nav-btn" onclick="prevPage()"><i class="fas fa-arrow-left"></i></button>
+                    <button class="nav-btn" onclick="nextPage()"><i class="fas fa-arrow-right"></i></button>
+                </div>
+            </div>
+            
+            <!-- 页面5 -->
+            <div class="page" id="page5">
+                <h2 class="page-title">未来的我们</h2>
+                <div class="photo-container">
+                    <div class="photo">
+                        <img src="https://images.unsplash.com/photo-1518621736915-f3b1c41bfd00?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" alt="我们的回忆">
+                        <div class="photo-caption">期待与你共度更多美好时光</div>
+                    </div>
+                </div>
+                <p style="text-align: center; max-width: 80%; margin: 0 auto 30px;">愿我们的故事，永远没有结局...</p>
+                <div class="nav-btns">
+                    <button class="nav-btn" onclick="prevPage()"><i class="fas fa-arrow-left"></i></button>
+                    <button class="nav-btn" onclick="goToCover()"><i class="fas fa-home"></i></button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 音乐控制 -->
+        <div class="music-control" id="musicControl">
+            <i class="fas fa-music"></i>
+        </div>
+    </div>
+    
+    <!-- 音频元素 -->
+    <audio id="bgMusic" loop>
+        <source src="https://music.163.com/song/media/outer/url?id=1824045033.mp3" type="audio/mpeg">
+        <!-- 这是一首生日快乐音乐，你可以替换成你喜欢的音乐链接 -->
+    </audio>
+    
+    <script>
+        // 当前页面索引
+        let currentPage = 1;
+        const totalPages = 5;
+        let musicPlaying = false;
+        const bgMusic = document.getElementById('bgMusic');
+        
+        // 微信自动播放音乐处理
+        document.addEventListener('DOMContentLoaded', function() {
+            // 微信中需要用户交互后才能播放音乐
+            document.addEventListener('WeixinJSBridgeReady', function() {
+                bgMusic.play();
+            }, false);
+            
+            // 封面进入按钮点击事件
+            document.getElementById('enterBtn').addEventListener('click', function() {
+                document.getElementById('cover').style.display = 'none';
+                document.getElementById('album').style.display = 'block';
+                document.getElementById('page1').classList.add('active');
+                
+                // 尝试播放音乐（需要用户交互后）
+                if (!musicPlaying) {
+                    bgMusic.volume = 0.5;
+                    const playPromise = bgMusic.play();
+                    
+                    if (playPromise !== undefined) {
+                        playPromise.then(_ => {
+                            musicPlaying = true;
+                            document.getElementById('musicControl').innerHTML = '<i class="fas fa-pause"></i>';
+                        })
+                        .catch(error => {
+                            console.log("自动播放被阻止，需要用户交互");
+                        });
+                    }
+                }
+            });
+            
+            // 音乐控制按钮
+            document.getElementById('musicControl').addEventListener('click', function() {
+                if (musicPlaying) {
+                    bgMusic.pause();
+                    this.innerHTML = '<i class="fas fa-music"></i>';
+                    musicPlaying = false;
+                } else {
+                    bgMusic.play();
+                    this.innerHTML = '<i class="fas fa-pause"></i>';
+                    musicPlaying = true;
+                }
+            });
+            
+            // 创建更多漂浮的爱心
+            createHearts();
+        });
+        
+        // 创建漂浮的爱心
+        function createHearts() {
+            const cover = document.getElementById('cover');
+            for (let i = 0; i < 8; i++) {
+                const heart = document.createElement('div');
+                heart.className = 'heart';
+                heart.innerHTML = '❤️';
+                heart.style.top = Math.random() * 80 + 10 + '%';
+                heart.style.left = Math.random() * 80 + 10 + '%';
+                heart.style.fontSize = (Math.random() * 15 + 15) + 'px';
+                heart.style.animationDelay = Math.random() * 2 + 's';
+                cover.appendChild(heart);
+            }
+        }
+        
+        // 下一页
+        function nextPage() {
+            if (currentPage >= totalPages) return;
+            
+            const current = document.getElementById('page' + currentPage);
+            const next = document.getElementById('page' + (currentPage + 1));
+            
+            current.classList.remove('active');
+            current.classList.add('page-exit');
+            
+            setTimeout(() => {
+                current.classList.remove('page-exit');
+                next.classList.add('active', 'page-enter');
+                currentPage++;
+                
+                setTimeout(() => {
+                    next.classList.remove('page-enter');
+                }, 800);
+            }, 50);
+        }
+        
+        // 上一页
+        function prevPage() {
+            if (currentPage <= 1) return;
+            
+            const current = document.getElementById('page' + currentPage);
+            const prev = document.getElementById('page' + (currentPage - 1));
+            
+            current.classList.remove('active');
+            current.classList.add('page-exit');
+            
+            setTimeout(() => {
+                current.classList.remove('page-exit');
+                prev.classList.add('active', 'page-enter');
+                currentPage--;
+                
+                setTimeout(() => {
+                    prev.classList.remove('page-enter');
+                }, 800);
+            }, 50);
+        }
+        
+        // 返回封面
+        function goToCover() {
+            const current = document.getElementById('page' + currentPage);
+            current.classList.remove('active');
+            current.classList.add('page-exit');
+            
+            setTimeout(() => {
+                document.getElementById('album').style.display = 'none';
+                document.getElementById('cover').style.display = 'flex';
+                current.classList.remove('page-exit');
+                currentPage = 1;
+                document.getElementById('page1').classList.add('active');
+            }, 800);
+        }
+        
+        // 触摸滑动支持
+        let touchStartX = 0;
+        let touchEndX = 0;
+        
+        document.addEventListener('touchstart', function(e) {
+            touchStartX = e.changedTouches[0].screenX;
+        }, false);
+        
+        document.addEventListener('touchend', function(e) {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        }, false);
+        
+        function handleSwipe() {
+            if (touchEndX < touchStartX - 50) {
+                nextPage(); // 向左滑动，下一页
+            }
+            
+            if (touchEndX > touchStartX + 50) {
+                prevPage(); // 向右滑动，上一页
+            }
+        }
+    </script>
+</body>
+</html>
